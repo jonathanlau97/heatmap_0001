@@ -119,7 +119,7 @@ DAYS_ORDER   = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","S
 DAY_MAP_NUM  = {1:"Monday",2:"Tuesday",3:"Wednesday",4:"Thursday",5:"Friday",6:"Saturday",7:"Sunday"}
 
 FOCUS_STATUSES   = ["CANCELLED_BY_DRIVER","CANCELLED_BY_PASSENGER","NO_DRIVER_AVAILABLE","NO_TAKER"]
-STATUS_LABELS     = {"CANCELLED_BY_DRIVER":"By Driver","CANCELLED_BY_PASSENGER":"By Pax",
+STATUS_LABELS     = {"CANCELLED_BY_DRIVER":"Cancelled By Driver","CANCELLED_BY_PASSENGER":"Cancelled By Pax",
                      "NO_DRIVER_AVAILABLE":"No Driver","NO_TAKER":"No Taker"}
 STATUS_LABELS_LONG= {"CANCELLED_BY_DRIVER":"Cancelled by Driver","CANCELLED_BY_PASSENGER":"Cancelled by Pax",
                      "NO_DRIVER_AVAILABLE":"No Driver Available","NO_TAKER":"No Taker"}
