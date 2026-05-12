@@ -296,7 +296,7 @@ def ss(key, default):
 
 ss("sel_statuses", set())
 ss("sel_days", set())
-ss("sel_hours", set()))
+ss("sel_hours", set())
 ss("show_landmarks", False)
 ss("show_hex", True)
 ss("lm_cats", set())
