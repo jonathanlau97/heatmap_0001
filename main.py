@@ -294,12 +294,12 @@ def ss(key, default):
     if key not in st.session_state:
         st.session_state[key] = default
 
-ss("sel_statuses", set(FOCUS_STATUSES))
-ss("sel_days", set(DAYS_ORDER))
-ss("sel_hours", set(range(24)))
-ss("show_landmarks", True)
+ss("sel_statuses", set())
+ss("sel_days", set())
+ss("sel_hours", set()))
+ss("show_landmarks", False)
 ss("show_hex", True)
-ss("lm_cats", {"landmark","mall","transit","hospital","edu"})
+ss("lm_cats", set())
 ss("clicked_cell", None)
 
 # ── LOAD DATA ─────────────────────────────────────────────────────────────────
