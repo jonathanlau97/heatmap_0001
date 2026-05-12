@@ -112,7 +112,7 @@ iframe { border-radius: 12px !important; border: 1px solid #E5E7EB !important; }
 """, unsafe_allow_html=True)
 
 # ── CONSTANTS ─────────────────────────────────────────────────────────────────
-GITHUB_CSV_URL = "https://raw.githubusercontent.com/jonathanlau97/heatmap_0001/main/heatmap0001.csv"
+GITHUB_CSV_URL = "https://raw.githubusercontent.com/jonathanlau97/heatmap_0001/main/heatmap00001.csv"
 H3_RES = 6
 
 DAYS_ORDER   = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
@@ -170,7 +170,7 @@ def load_data():
         df = pd.read_csv(GITHUB_CSV_URL)
     except Exception:
         import os
-        df = pd.read_csv(os.path.join(os.path.dirname(__file__), "heatmap0001.csv"))
+        df = pd.read_csv(os.path.join(os.path.dirname(__file__), "heatmap00001.csv"))
 
     coords = df["Location"].apply(parse_loc)
     df["lat"] = coords.apply(lambda x: x[0])
