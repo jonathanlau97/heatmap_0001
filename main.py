@@ -317,7 +317,7 @@ st.markdown("""
     🗺️ AirAsia Rides
   </div>
   <div style='font-size:.62rem;color:#9CA3AF;font-weight:500;margin-top:1px'>
-    Supply gap heatmap · Klang Valley · 2026 YTD
+    Supply gap heatmap · Klang Valley · 2026 YTD · On-demand only
   </div>
 </div>
 """, unsafe_allow_html=True)
