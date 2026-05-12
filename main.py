@@ -135,11 +135,12 @@ DAYS_ORDER = list(DAY_MAP.values())
 DAY_SHORT = {v: v[:3] for v in DAY_MAP.values()}
 
 # Only the 3 supply-side failure statuses
-FOCUS_STATUSES = ["CANCELLED_BY_DRIVER", "NO_DRIVER_AVAILABLE", "NO_TAKER"]
+FOCUS_STATUSES = ["CANCELLED_BY_DRIVER", "CANCELLED_BY_PASSENGER", "NO_DRIVER_AVAILABLE", "NO_TAKER"]
 STATUS_COLORS = {
-    "CANCELLED_BY_DRIVER":  "#EF4444",
-    "NO_DRIVER_AVAILABLE":  "#F59E0B",
-    "NO_TAKER":             "#3B82F6",
+    "CANCELLED_BY_DRIVER":    "#EF4444",
+    "CANCELLED_BY_PASSENGER": "#F97316",
+    "NO_DRIVER_AVAILABLE":    "#F59E0B",
+    "NO_TAKER":               "#3B82F6",
 }
 
 LANDMARKS = [
@@ -328,9 +329,9 @@ st.markdown('<span class="slbl">Status</span>', unsafe_allow_html=True)
 s_cols = st.columns(len(FOCUS_STATUSES))
 for col, s in zip(s_cols, FOCUS_STATUSES):
     is_on = s in st.session_state.sel_statuses
-    label = s.replace("_"," ").replace("Cancelled By","Cancelled by").replace("No Driver Available","No Driver").replace("No Taker","No Taker")
+    label = s.replace("_"," ")
     # Shorten labels
-    short = {"CANCELLED_BY_DRIVER":"Cancelled by Driver","NO_DRIVER_AVAILABLE":"No Driver","NO_TAKER":"No Taker"}[s]
+    short = {"CANCELLED_BY_DRIVER":"Cancelled by Driver","CANCELLED_BY_PASSENGER":"Cancelled by Pax","NO_DRIVER_AVAILABLE":"No Driver","NO_TAKER":"No Taker"}[s]
     btn_label = ("✓ " if is_on else "") + short
     if col.button(btn_label, key=f"s_{s}", use_container_width=True, type="primary" if is_on else "secondary"):
         if is_on: st.session_state.sel_statuses.discard(s)
@@ -399,7 +400,8 @@ filtered = df_raw[
 total_bk = int(filtered["TotalBookings"].sum())
 top_s = (filtered.groupby("item_status")["TotalBookings"].sum().idxmax()
          if len(filtered) > 0 else "—")
-top_s_label = {"CANCELLED_BY_DRIVER":"Cxl by Driver",
+top_s_label = {"CANCELLED_BY_DRIVER":"Cancelled by Driver",
+               "CANCELLED_BY_PASSENGER":"Cancelled by Pax",
                "NO_DRIVER_AVAILABLE":"No Driver Available",
                "NO_TAKER":"No Taker"}.get(top_s, top_s)
 
@@ -422,7 +424,7 @@ with leg_col:
 
     st.markdown("<div class='leg-box'>", unsafe_allow_html=True)
     st.markdown("<div class='leg-title'>Status</div>", unsafe_allow_html=True)
-    status_labels = {"CANCELLED_BY_DRIVER":"Cxl Driver","NO_DRIVER_AVAILABLE":"No Driver","NO_TAKER":"No Taker"}
+    status_labels = {"CANCELLED_BY_DRIVER":"Cancelled by Driver","CANCELLED_BY_PASSENGER":"Cancelled by Pax","NO_DRIVER_AVAILABLE":"No Driver","NO_TAKER":"No Taker"}
     for s in FOCUS_STATUSES:
         if s not in sel_s: continue
         c = STATUS_COLORS[s]
