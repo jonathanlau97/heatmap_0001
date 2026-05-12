@@ -65,6 +65,15 @@ section[data-testid="stSidebar"] { display: none !important; }
     color: #166534 !important;
 }
 
+/* Airport toggle — amber accent when active */
+.airport-active > button,
+.airport-active > button[kind="primary"] {
+    background: #FEF3C7 !important;
+    border-color: #F59E0B !important;
+    color: #92400E !important;
+    font-weight: 700 !important;
+}
+
 /* Metrics */
 [data-testid="metric-container"] {
     background: #fff;
@@ -134,7 +143,6 @@ DAY_MAP = {1:"Monday",2:"Tuesday",3:"Wednesday",4:"Thursday",5:"Friday",6:"Satur
 DAYS_ORDER = list(DAY_MAP.values())
 DAY_SHORT = {v: v[:3] for v in DAY_MAP.values()}
 
-# Only the 3 supply-side failure statuses
 FOCUS_STATUSES = ["CANCELLED_BY_DRIVER", "CANCELLED_BY_PASSENGER", "NO_DRIVER_AVAILABLE", "NO_TAKER"]
 STATUS_COLORS = {
     "CANCELLED_BY_DRIVER":    "#EF4444",
@@ -202,8 +210,17 @@ def load_data():
     else:
         df["dayofweek"] = dow.astype(str).str.strip().str.capitalize()
     df["item_status"] = df["item_status"].astype(str).str.strip()
-    # Pre-filter to only our 3 focus statuses
     df = df[df["item_status"].isin(FOCUS_STATUSES)].copy()
+
+    # ── airport_tag: normalise to lowercase "yes" / "no", default "no" ──
+    if "airport_tag" in df.columns:
+        df["airport_tag"] = (
+            df["airport_tag"].astype(str).str.strip().str.lower()
+            .map(lambda v: "yes" if v == "yes" else "no")
+        )
+    else:
+        df["airport_tag"] = "no"
+
     df["h3_cell"] = df.apply(lambda r: h3.latlng_to_cell(r["lat"], r["lng"], H3_RES), axis=1)
     return df
 
@@ -236,7 +253,6 @@ def build_map(df_f, show_landmarks, lm_cats):
                 norm = density / mx
                 col = density_color(norm)
                 center = h3.cell_to_latlng(cell)
-                # Hex polygon
                 folium.Polygon(
                     locations=[[p[0], p[1]] for p in bnd],
                     color=col, weight=0.7, opacity=0.4,
@@ -249,7 +265,6 @@ def build_map(df_f, show_landmarks, lm_cats):
                         sticky=True,
                     ),
                 ).add_to(m)
-                # Small number label at hex centre
                 folium.Marker(
                     location=[center[0], center[1]],
                     icon=folium.DivIcon(
@@ -301,6 +316,7 @@ ss("show_landmarks", False)
 ss("show_hex", True)
 ss("lm_cats", set())
 ss("clicked_cell", None)
+ss("airport_filter", "all")   # "all" | "yes" | "no"
 
 # ── LOAD DATA ─────────────────────────────────────────────────────────────────
 try:
@@ -329,9 +345,7 @@ st.markdown('<span class="slbl">Status</span>', unsafe_allow_html=True)
 s_cols = st.columns(len(FOCUS_STATUSES))
 for col, s in zip(s_cols, FOCUS_STATUSES):
     is_on = s in st.session_state.sel_statuses
-    label = s.replace("_"," ")
-    # Shorten labels
-    short = {"CANCELLED_BY_DRIVER":"Cancelled by Driver","CANCELLED_BY_PASSENGER":"Cancelled by Pax","NO_DRIVER_AVAILABLE":"No Driver","NO_TAKER":"No Taker"}[s]
+    short = {"CANCELLED_BY_DRIVER":"By Driver","CANCELLED_BY_PASSENGER":"By Pax","NO_DRIVER_AVAILABLE":"No Driver","NO_TAKER":"No Taker"}[s]
     btn_label = ("✓ " if is_on else "") + short
     if col.button(btn_label, key=f"s_{s}", use_container_width=True, type="primary" if is_on else "secondary"):
         if is_on: st.session_state.sel_statuses.discard(s)
@@ -344,8 +358,7 @@ st.markdown('<span class="slbl">Day</span>', unsafe_allow_html=True)
 d_cols = st.columns(7)
 for col, day in zip(d_cols, DAYS_ORDER):
     is_on = day in st.session_state.sel_days
-    short = day[:3]
-    if col.button(("✓ " if is_on else "") + short, key=f"d_{day}", use_container_width=True, type="primary" if is_on else "secondary"):
+    if col.button(("✓ " if is_on else "") + day[:3], key=f"d_{day}", use_container_width=True, type="primary" if is_on else "secondary"):
         if is_on: st.session_state.sel_days.discard(day)
         else:     st.session_state.sel_days.add(day)
         st.session_state.clicked_cell = None
@@ -364,19 +377,37 @@ for row_hours in h_rows:
             st.session_state.clicked_cell = None
             st.rerun()
 
-# MAP LAYERS -------------------------------------------------------------------
-st.markdown('<span class="slbl">Layers</span>', unsafe_allow_html=True)
-lyr_cols = st.columns(7)
+# AIRPORT + MAP LAYERS ---------------------------------------------------------
+st.markdown('<span class="slbl">Airport & Layers</span>', unsafe_allow_html=True)
+al_cols = st.columns(8)
 
+# Airport toggle — 3-way: All / ✈ Only / Non-✈
+airport_cycle = {"all": ("✈ All", "yes"), "yes": ("✈ Only", "no"), "no": ("Non-✈", "all")}
+cur_af        = st.session_state.airport_filter
+ap_label, _   = airport_cycle[cur_af]
+ap_is_active  = cur_af != "all"
+
+# Wrap in a div so we can target it for amber styling when active
+if ap_is_active:
+    al_cols[0].markdown("<div class='airport-active'>", unsafe_allow_html=True)
+if al_cols[0].button(ap_label, key="tog_airport", use_container_width=True,
+                     type="primary" if ap_is_active else "secondary"):
+    st.session_state.airport_filter = airport_cycle[cur_af][1]
+    st.session_state.clicked_cell = None
+    st.rerun()
+if ap_is_active:
+    al_cols[0].markdown("</div>", unsafe_allow_html=True)
+
+# Landmarks toggle
 is_lm = st.session_state.show_landmarks
-if lyr_cols[0].button(("✓ " if is_lm else "") + "Landmarks", key="tog_lm", use_container_width=True, type="primary" if is_lm else "secondary"):
+if al_cols[1].button(("✓ " if is_lm else "") + "POIs", key="tog_lm", use_container_width=True, type="primary" if is_lm else "secondary"):
     st.session_state.show_landmarks = not is_lm
     st.rerun()
 
 if st.session_state.show_landmarks:
-    cat_map = {"landmark":"Sights","mall":"Malls","transit":"Transit","hospital":"Hospitals","edu":"Uni"}
+    cat_map = {"landmark":"Sights","mall":"Malls","transit":"Transit","hospital":"Hosp","edu":"Uni"}
     for idx, (cat, lbl) in enumerate(cat_map.items()):
-        col = lyr_cols[idx+1]
+        col = al_cols[idx + 2]
         is_cat = cat in st.session_state.lm_cats
         if col.button(("✓ " if is_cat else "") + lbl, key=f"lc_{cat}", use_container_width=True, type="primary" if is_cat else "secondary"):
             if is_cat: st.session_state.lm_cats.discard(cat)
@@ -389,12 +420,17 @@ st.markdown("<hr>", unsafe_allow_html=True)
 sel_s = st.session_state.sel_statuses or set(FOCUS_STATUSES)
 sel_d = st.session_state.sel_days or set(DAYS_ORDER)
 sel_h = st.session_state.sel_hours if st.session_state.sel_hours else set(range(24))
+af    = st.session_state.airport_filter   # "all" | "yes" | "no"
 
 filtered = df_raw[
     df_raw["item_status"].isin(sel_s) &
     df_raw["dayofweek"].isin(sel_d) &
     df_raw["bookinghour"].isin(sel_h)
 ].reset_index(drop=True)
+
+# Apply airport filter only when not "all"
+if af != "all":
+    filtered = filtered[filtered["airport_tag"] == af].reset_index(drop=True)
 
 # ── METRICS ───────────────────────────────────────────────────────────────────
 total_bk = int(filtered["TotalBookings"].sum())
@@ -405,9 +441,13 @@ top_s_label = {"CANCELLED_BY_DRIVER":"Cancelled by Driver",
                "NO_DRIVER_AVAILABLE":"No Driver Available",
                "NO_TAKER":"No Taker"}.get(top_s, top_s)
 
-mc1, mc2 = st.columns(2)
+# Airport filter badge for metric label
+airport_badge = {"all": "", "yes": " · ✈ Airport only", "no": " · Non-airport"}[af]
+
+mc1, mc2, mc3 = st.columns(3)
 mc1.metric("Total Bookings", f"{total_bk:,}")
 mc2.metric("Top Gap", top_s_label if top_s != "—" else "—")
+mc3.metric("Airport Filter", {"all":"All trips","yes":"✈ Airport only","no":"Non-airport"}[af])
 
 st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
 
@@ -434,6 +474,17 @@ with leg_col:
             unsafe_allow_html=True,
         )
     st.markdown("</div>", unsafe_allow_html=True)
+
+    # Airport legend chip
+    if af != "all":
+        chip_color = "#F59E0B" if af == "yes" else "#6B7280"
+        chip_label = "✈ Airport trips only" if af == "yes" else "Non-airport trips"
+        st.markdown(
+            f"<div class='leg-box' style='border-color:{chip_color};margin-top:.4rem'>"
+            f"<div style='font-size:.65rem;font-weight:700;color:{chip_color}'>{chip_label}</div>"
+            f"</div>",
+            unsafe_allow_html=True,
+        )
 
 with map_col:
     if len(filtered) == 0:
