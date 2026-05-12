@@ -328,7 +328,7 @@ st.markdown('<span class="slbl">Status</span>', unsafe_allow_html=True)
 s_cols = st.columns(len(FOCUS_STATUSES))
 for col, s in zip(s_cols, FOCUS_STATUSES):
     is_on = s in st.session_state.sel_statuses
-    label = s.replace("_"," ").replace("Cancelled By","Cxl by").replace("No Driver Available","No Driver").replace("No Taker","No Taker")
+    label = s.replace("_"," ").replace("Cancelled By","Cancelled by").replace("No Driver Available","No Driver").replace("No Taker","No Taker")
     # Shorten labels
     short = {"CANCELLED_BY_DRIVER":"Cxl Driver","NO_DRIVER_AVAILABLE":"No Driver","NO_TAKER":"No Taker"}[s]
     btn_label = ("✓ " if is_on else "") + short
