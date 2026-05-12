@@ -84,7 +84,7 @@ div[data-testid="stSlider"] label{display:none}
 """, unsafe_allow_html=True)
 
 # ─── CONSTANTS ────────────────────────────────────────────────────────────────
-GITHUB_CSV_URL = "https://raw.githubusercontent.com/jonathanlau97/heatmap_0001/heatmap0001.csv"
+GITHUB_CSV_URL = "https://raw.githubusercontent.com/jonathanlau97/heatmap_0001/main/heatmap0001.csv"
 H3_RES = 6  # district level (~132 cells for KL)
 
 DAY_MAP = {1:"Monday",2:"Tuesday",3:"Wednesday",4:"Thursday",5:"Friday",6:"Saturday",7:"Sunday"}
@@ -160,7 +160,7 @@ def load_data():
     except Exception:
         # fallback: load from local path if running with uploaded file nearby
         import os
-        local = os.path.join(os.path.dirname(__file__), "2026_YTD_heatmap.csv")
+        local = os.path.join(os.path.dirname(__file__), "heatmap0001.csv")
         df = pd.read_csv(local)
 
     coords = df["Location"].apply(parse_location)
