@@ -330,7 +330,7 @@ for col, s in zip(s_cols, FOCUS_STATUSES):
     is_on = s in st.session_state.sel_statuses
     label = s.replace("_"," ").replace("Cancelled By","Cancelled by").replace("No Driver Available","No Driver").replace("No Taker","No Taker")
     # Shorten labels
-    short = {"CANCELLED_BY_DRIVER":"Cxl Driver","NO_DRIVER_AVAILABLE":"No Driver","NO_TAKER":"No Taker"}[s]
+    short = {"CANCELLED_BY_DRIVER":"Cancelled by Driver","NO_DRIVER_AVAILABLE":"No Driver","NO_TAKER":"No Taker"}[s]
     btn_label = ("✓ " if is_on else "") + short
     if col.button(btn_label, key=f"s_{s}", use_container_width=True, type="primary" if is_on else "secondary"):
         if is_on: st.session_state.sel_statuses.discard(s)
