@@ -1,0 +1,6 @@
+streamlit
+pandas
+numpy
+h3
+folium
+streamlit-folium
